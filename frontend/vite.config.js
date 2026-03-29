@@ -4,7 +4,6 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
 
-  // Dev server — replaces CRA's "proxy" field in package.json
   server: {
     port: 3000,
     proxy: {
@@ -15,12 +14,10 @@ export default defineConfig({
     },
   },
 
-  // Preview server (after build)
   preview: {
     port: 3000,
   },
 
-  // Resolve aliases — replaces jsconfig paths
   resolve: {
     alias: {
       "@components": "/src/components",
@@ -30,7 +27,20 @@ export default defineConfig({
     },
   },
 
-  // Test config (Vitest) — replaces jest block in package.json
+  // Safety net: treat any .js files containing JSX as jsx
+  esbuild: {
+    loader: "jsx",
+    include: /src\/.*\.js$/,
+  },
+
+  optimizeDeps: {
+    esbuildOptions: {
+      loader: {
+        ".js": "jsx",
+      },
+    },
+  },
+
   test: {
     globals: true,
     environment: "jsdom",
@@ -43,7 +53,7 @@ export default defineConfig({
   },
 
   build: {
-    outDir: "build",       // keep same output dir as CRA for Dockerfile compatibility
+    outDir: "build",
     sourcemap: false,
     rollupOptions: {
       output: {
