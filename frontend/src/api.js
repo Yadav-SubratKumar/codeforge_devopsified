@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  // Use relative path — Nginx proxies /api/* to backend:5000
+  // This works regardless of what host/IP the app is deployed on
+  baseURL: import.meta.env.VITE_API_URL || "/api",
   timeout: 10000,
   headers: { "Content-Type": "application/json" },
 });
