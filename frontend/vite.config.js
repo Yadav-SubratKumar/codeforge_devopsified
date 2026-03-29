@@ -27,19 +27,6 @@ export default defineConfig({
     },
   },
 
-  // Safety net: treat any .js files containing JSX as jsx
-  esbuild: {
-    loader: "jsx",
-    include: /src\/.*\.js$/,
-  },
-
-  optimizeDeps: {
-    esbuildOptions: {
-      loader: {
-        ".js": "jsx",
-      },
-    },
-  },
 
   test: {
     globals: true,
