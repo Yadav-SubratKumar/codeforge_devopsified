@@ -1,0 +1,85 @@
+version: "3.9"
+
+services:
+  # ─── TIER 1: Frontend (React) ───────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - codeforge-net
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+
+  # ─── TIER 2: Backend API (Node.js / Express) ─────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - codeforge-net
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DATABASE_URL=postgresql://codeforge:secret@postgres:5432/codeforge_db
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=change_me_in_production
+    restart: unless-stopped
+
+  # ─── TIER 3: PostgreSQL Database ─────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: codeforge
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: codeforge_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/config/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - codeforge-net
+    restart: unless-stopped
+
+  # ─── TIER 4: Redis Cache ──────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass redissecret
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - codeforge-net
+    restart: unless-stopped
+
+  # ─── Code Execution Worker ────────────────────────────────────────────────────
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+    networks:
+      - codeforge-net
+    environment:
+      - REDIS_URL=redis://:redissecret@redis:6379
+    restart: unless-stopped
+
+networks:
+  codeforge-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
