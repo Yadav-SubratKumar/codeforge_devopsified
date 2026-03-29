@@ -7,28 +7,24 @@ const connectRedis = async () => {
   redisClient = new Redis(process.env.REDIS_URL, {
     maxRetriesPerRequest: 3,
     retryStrategy: (times) => {
-      if (times > 10) {
-        logger.error("Redis retry limit reached — giving up");
-        return null; // stop retrying
-      }
+      if (times > 10) return null;
       return Math.min(times * 200, 3000);
     },
-    lazyConnect: false,
   });
 
-  redisClient.on("connect", () => logger.info("✅ Redis connected"));
-  redisClient.on("ready",   () => logger.info("✅ Redis ready"));
-  redisClient.on("error",   (err) => logger.error(`❌ Redis error: ${err.message}`));
-  redisClient.on("close",   () => logger.warn("⚠️  Redis connection closed"));
+  return new Promise((resolve, reject) => {
+    redisClient.on("ready", () => {
+      logger.info("✅ Redis ready");
+      resolve();
+    });
 
-  // Verify the connection actually works (catches auth failures immediately)
-  try {
-    await redisClient.ping();
-    logger.info("✅ Redis ping OK");
-  } catch (err) {
-    logger.error(`❌ Redis connect failed: ${err.message}`);
-    process.exit(1);
-  }
+    redisClient.on("error", (err) => {
+      logger.error(`❌ Redis error: ${err.message}`);
+    });
+
+    // Timeout if Redis never becomes ready
+    setTimeout(() => reject(new Error("Redis connection timeout")), 10000);
+  });
 };
 
 const getRedis = () => {

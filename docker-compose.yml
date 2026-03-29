@@ -12,8 +12,6 @@ services:
       - backend
     networks:
       - codeforge-net
-    environment:
-      - REACT_APP_API_URL=http://localhost:5000
 
   # ─── TIER 2: Backend API (Node.js / Express) ─────────────────────────────────
   backend:
@@ -23,8 +21,10 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - codeforge-net
     environment:
@@ -33,6 +33,7 @@ services:
       - DATABASE_URL=postgresql://codeforge:secret@postgres:5432/codeforge_db
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=change_me_in_production
+      - ALLOWED_ORIGINS=http://localhost:3000
     restart: unless-stopped
 
   # ─── TIER 3: PostgreSQL Database ─────────────────────────────────────────────
@@ -50,11 +51,17 @@ services:
     networks:
       - codeforge-net
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codeforge -d codeforge_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   # ─── TIER 4: Redis Cache ──────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
-    command: redis-server --requirepass redissecret
+    # No password — services communicate on an isolated private Docker network
+    command: redis-server --save 60 1 --loglevel warning
     ports:
       - "6379:6379"
     volumes:
@@ -62,6 +69,11 @@ services:
     networks:
       - codeforge-net
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   # ─── Code Execution Worker ────────────────────────────────────────────────────
   worker:
@@ -69,11 +81,13 @@ services:
       context: ./worker
       dockerfile: Dockerfile
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     networks:
       - codeforge-net
     environment:
-      - REDIS_URL=redis://:redissecret@redis:6379
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://codeforge:secret@postgres:5432/codeforge_db
     restart: unless-stopped
 
 networks:
