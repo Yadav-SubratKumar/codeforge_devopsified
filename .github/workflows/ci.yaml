@@ -61,7 +61,7 @@ jobs:
           JWT_SECRET: test_secret_key
         run: npm test
 
-  ─── Frontend ───────────────────────────────────────────────────
+#  ─── Frontend ───────────────────────────────────────────────────
   frontend-test:
     name: Frontend Tests & Build
     runs-on: ubuntu-latest
@@ -96,7 +96,7 @@ jobs:
           path: frontend/build/
           retention-days: 7
 
-  ─── Docker Build Check ─────────────────────────────────────────
+ # ─── Docker Build Check ─────────────────────────────────────────
   docker-build:
     name: Docker Build Check
     runs-on: ubuntu-latest
