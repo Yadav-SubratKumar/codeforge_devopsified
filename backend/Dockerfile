@@ -5,7 +5,7 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 # ─── Stage 2: Production ──────────────────────────────────────────────────────
-FROM node:22-alpine
+FROM node:22-slim
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app
 
