@@ -1,19 +1,10 @@
-# ─── Stage 1: Build ───────────────────────────────────────────────────────────
-FROM node:22-alpine AS builder
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci
-
-COPY . .
-RUN npm run build
-
-# ─── Stage 2: Distroless Node ─────────────────────────────────────────────────
 FROM cgr.dev/chainguard/node:latest
 
 WORKDIR /app
-COPY --from=builder /app/build ./build
 
-EXPOSE 5000
+COPY package*.json ./
+RUN npm ci --omit=dev
 
-CMD ["build/server.js"]
+COPY . .
+
+CMD ["worker.js"]
