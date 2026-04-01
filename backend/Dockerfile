@@ -1,31 +1,20 @@
-# ─── Stage 1: Builder ─────────────────────────
-FROM node:22-alpine AS builder
+# ─── Stage 1: Builder ───────────────────────────────────────────────────────
+FROM node:24-slim AS builder
+
 WORKDIR /app
-
-RUN apk update && apk upgrade --no-cache
-
 COPY package*.json ./
 RUN npm ci --omit=dev
+COPY . .
 
-# ─── Stage 2: Production ──────────────────────
-FROM node:22-alpine
-
-RUN apk update && apk upgrade --no-cache
-
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+# ─── Stage 2: Chainguard Runtime ────────────────────────────────────────────
+FROM cgr.dev/chainguard/node:latest
 
 WORKDIR /app
 
-COPY --from=builder /app/node_modules ./node_modules
-COPY . .
+COPY --from=builder /app /app
 
-RUN mkdir -p logs && chown -R appuser:appgroup /app
-
-USER appuser
+ENV NODE_ENV=production
 
 EXPOSE 5000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD wget -qO- http://localhost:5000/api/health || exit 1
-
-CMD ["node", "server.js"]
+CMD ["server.js"]
