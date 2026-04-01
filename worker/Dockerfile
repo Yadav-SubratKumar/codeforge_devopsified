@@ -9,7 +9,7 @@ COPY . .
 RUN npm run build
 
 # ─── Stage 2: Distroless Node ─────────────────────────────────────────────────
-FROM gcr.io/distroless/nodejs22-debian12
+FROM cgr.dev/chainguard/node:latest
 
 WORKDIR /app
 COPY --from=builder /app/build ./build
