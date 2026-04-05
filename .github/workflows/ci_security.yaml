@@ -1,14 +1,17 @@
-name: CI — Build & Test
+name: Security Scans
 
 on:
   push:
     branches: [main, develop]
   pull_request:
     branches: [main]
+  schedule:
+    # Run every Monday at 08:00 UTC regardless of commits
+    - cron: "0 8 * * 1"
 
 jobs:
-  # ─── Backend ────────────────────────────────────────────────────
-  itleaks:
+  # ─── Secret Detection ───────────────────────────────────────────
+  gitleaks:
     name: Secret Detection (GitLeaks)
     runs-on: ubuntu-latest
     steps:
@@ -21,66 +24,7 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   
-  # ─── Dependency Audit ───────────────────────────────────────────
-  dependency-audit:
-    name: Dependency Audit
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Audit backend dependencies
-        working-directory: backend
-        run: npm audit --audit-level=high
-
-      - name: Audit frontend dependencies
-        working-directory: frontend
-        run: npm audit --audit-level=high
-
-      - name: Audit worker dependencies
-        working-directory: worker
-        run: npm audit --audit-level=high
-
-  # ─── SAST — Semgrep ─────────────────────────────────────────────
-  semgrep:
-    name: SAST (Semgrep)
-    runs-on: ubuntu-latest
-    container:
-      image: semgrep/semgrep
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run Semgrep
-        run: |
-          semgrep scan \
-            --config=p/nodejs \
-            --config=p/jwt \
-            --config=p/express \
-            --config=p/secrets \
-            --config=p/owasp-top-ten \
-            --error \
-            --json \
-            --output semgrep-report.json \
-            backend/ worker/
-        continue-on-error: true
-
-      - name: Upload Semgrep report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: semgrep-report
-          path: semgrep-report.json
-
   backend-test:
     name: Backend Tests
     runs-on: ubuntu-latest
@@ -169,11 +113,69 @@ jobs:
           path: frontend/build/
           retention-days: 7
 
- # ─── Docker Build Check ─────────────────────────────────────────
-  docker-build:
-    name: Docker Build Check
+  # ─── Dependency Audit ───────────────────────────────────────────
+  dependency-audit:
+    name: Dependency Audit
     runs-on: ubuntu-latest
-    needs: [backend-test, frontend-test]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Audit backend dependencies
+        working-directory: backend
+        run: npm audit --audit-level=high
+
+      - name: Audit frontend dependencies
+        working-directory: frontend
+        run: npm audit --audit-level=high
+
+      - name: Audit worker dependencies
+        working-directory: worker
+        run: npm audit --audit-level=high
+
+  # ─── SAST — Semgrep ─────────────────────────────────────────────
+  semgrep:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        run: |
+          semgrep scan \
+            --config=p/nodejs \
+            --config=p/jwt \
+            --config=p/express \
+            --config=p/secrets \
+            --config=p/owasp-top-ten \
+            --error \
+            --json \
+            --output semgrep-report.json \
+            backend/ worker/
+        continue-on-error: true
+
+      - name: Upload Semgrep report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semgrep-report
+          path: semgrep-report.json
+
+  # ─── Container Scanning — Trivy ─────────────────────────────────
+  trivy:
+    name: Container Scan (Trivy)
+    runs-on: ubuntu-latest
+    needs: []
 
     steps:
       - name: Checkout code
@@ -182,60 +184,64 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build backend image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./backend
-          push: false
-          tags: codeforge-backend:ci
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-      
-      - name: Scan backend image with Trivy
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: codeforge-backend:ci
-          format: table
-          exit-code: 1
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-
-      - name: Build frontend image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./frontend
-          push: false
-          tags: codeforge-frontend:ci
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Scan frontend image with Trivy
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: codeforge-frontend:ci
-          format: table
-          exit-code: 1
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-
-      - name: Build worker image
+      - name: Build worker image for scanning
         uses: docker/build-push-action@v6
         with:
           context: ./worker
           push: false
-          tags: codeforge-worker:ci
+          tags: codeforge-worker:scan
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
-      - name: Scan frontend image with Trivy
+          load: true
+
+      - name: Build backend image for scanning
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: false
+          tags: codeforge-backend:scan
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+
+      - name: Build frontend image for scanning
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: false
+          tags: codeforge-frontend:scan
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+
+      - name: Scan worker image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: codeforge-worker:ci
+          image-ref: codeforge-worker:scan
           format: table
           exit-code: 1
           severity: CRITICAL,HIGH
           ignore-unfixed: true
-  
+      
+      - name: Scan backend image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: codeforge-backend:scan
+          format: table
+          exit-code: 1
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Scan frontend image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: codeforge-frontend:scan
+          format: table
+          exit-code: 1
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+  # ─── OWASP Dependency Check ─────────────────────────────────────
   owasp:
     name: OWASP Dependency Check
     runs-on: ubuntu-latest
