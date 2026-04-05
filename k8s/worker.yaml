@@ -1,0 +1,100 @@
+# ─── Worker Deployment ────────────────────────────────────────────────────────
+# The worker polls Redis for submission jobs and runs code evaluation.
+# Scale replicas to increase evaluation throughput.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: codeforge
+  labels:
+    app.kubernetes.io/name: worker
+    app.kubernetes.io/part-of: codeforge
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: worker
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: worker
+        app.kubernetes.io/name: worker
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: worker
+      # Graceful shutdown — allow in-flight jobs to finish
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: worker
+          image: codeforge/worker:latest   # Replace with your registry image
+          imagePullPolicy: Always
+          env:
+            - name: REDIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: codeforge-config
+                  key: REDIS_URL
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: codeforge-secrets
+                  key: POSTGRES_PASSWORD
+            - name: DATABASE_URL
+              value: "postgresql://codeforge:$(POSTGRES_PASSWORD)@postgres-svc:5432/codeforge_db"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "2000m"     # Code evaluation can be CPU intensive
+              memory: "1Gi"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop: ["ALL"]
+          # Workers have no HTTP server so we use a process liveness check
+          livenessProbe:
+            exec:
+              command: ["node", "-e", "process.exit(0)"]
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+
+---
+# ─── Worker HorizontalPodAutoscaler ──────────────────────────────────────────
+# Scales based on CPU since code evaluation is compute-bound.
+# For queue-depth based scaling, consider KEDA (Kubernetes Event-Driven Autoscaling).
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: worker-hpa
+  namespace: codeforge
+  labels:
+    app.kubernetes.io/name: worker
+    app.kubernetes.io/part-of: codeforge
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: worker
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60

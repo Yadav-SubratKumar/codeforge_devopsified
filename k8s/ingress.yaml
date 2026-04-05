@@ -1,0 +1,45 @@
+# ─── Ingress ──────────────────────────────────────────────────────────────────
+# Requires: ingress-nginx controller + cert-manager with a ClusterIssuer named "letsencrypt-prod"
+# For local dev (minikube/kind), remove the tls block and set host to a local domain.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: codeforge-ingress
+  namespace: codeforge
+  labels:
+    app.kubernetes.io/name: codeforge
+    app.kubernetes.io/part-of: codeforge
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    # Rate limiting at the ingress level (belt-and-suspenders with app-level limiting)
+    nginx.ingress.kubernetes.io/limit-rps: "30"
+    nginx.ingress.kubernetes.io/limit-connections: "20"
+spec:
+  tls:
+    - hosts:
+        - codeforge.example.com      # ← Replace with your domain
+      secretName: codeforge-tls
+  rules:
+    - host: codeforge.example.com   # ← Replace with your domain
+      http:
+        paths:
+          # API traffic → backend service
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-svc
+                port:
+                  number: 5000
+          # All other traffic → frontend (SPA)
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-svc
+                port:
+                  number: 80

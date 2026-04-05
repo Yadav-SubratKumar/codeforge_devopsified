@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: codeforge
+  labels:
+    app.kubernetes.io/name: codeforge
+    app.kubernetes.io/managed-by: kubectl
