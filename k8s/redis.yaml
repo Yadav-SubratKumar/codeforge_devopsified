@@ -12,7 +12,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 2Gi
+      storage: 1Gi
   storageClassName: standard
 
 ---
@@ -55,13 +55,6 @@ spec:
           volumeMounts:
             - name: redis-data
               mountPath: /data
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "128Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
           livenessProbe:
             exec:
               command: ["redis-cli", "ping"]
@@ -96,4 +89,4 @@ spec:
       targetPort: 6379
       protocol: TCP
       name: redis
-  clusterIP: None   # Headless for StatefulSet
+  clusterIP: None

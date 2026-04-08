@@ -23,7 +23,6 @@ spec:
         app: backend
         app.kubernetes.io/name: backend
     spec:
-      # Spread pods across nodes for HA
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname
@@ -33,7 +32,7 @@ spec:
               app: backend
       containers:
         - name: backend
-          image: codeforge/backend:latest   # Replace with your registry image
+          image: codeforge/backend:latest 
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
@@ -97,13 +96,7 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 5
             failureThreshold: 3
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            runAsUser: 1001
-            readOnlyRootFilesystem: false   # logs/ dir needs writes
-            capabilities:
-              drop: ["ALL"]
+
           volumeMounts:
             - name: logs
               mountPath: /app/logs
