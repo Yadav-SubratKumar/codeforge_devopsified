@@ -75,13 +75,7 @@ spec:
                 secretKeyRef:
                   name: codeforge-secrets
                   key: JWT_SECRET
-          resources:
-            requests:
-              cpu: "200m"
-              memory: "256Mi"
-            limits:
-              cpu: "1000m"
-              memory: "512Mi"
+          
           livenessProbe:
             httpGet:
               path: /api/health
@@ -89,6 +83,7 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 15
             failureThreshold: 3
+          
           readinessProbe:
             httpGet:
               path: /api/health

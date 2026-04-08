@@ -38,13 +38,7 @@ spec:
           ports:
             - containerPort: 8080
               name: http
-          resources:
-            requests:
-              cpu: "50m"
-              memory: "64Mi"
-            limits:
-              cpu: "200m"
-              memory: "128Mi"
+
           livenessProbe:
             httpGet:
               path: /
@@ -52,6 +46,7 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 15
             failureThreshold: 3
+          
           readinessProbe:
             httpGet:
               path: /
