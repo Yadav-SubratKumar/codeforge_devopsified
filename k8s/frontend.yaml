@@ -33,16 +33,15 @@ spec:
               app: frontend
       containers:
         - name: frontend
-          image: subratdevops/codeforge-frontend:v1.12
+          image: subratdevops/codeforge-frontend:v1.11
           imagePullPolicy: Always
           ports:
-            - containerPort: 8080
-              name: http
+            - containerPort: 80
 
           livenessProbe:
             httpGet:
               path: /
-              port: 8080
+              port: 80
             initialDelaySeconds: 10
             periodSeconds: 15
             failureThreshold: 3
@@ -50,7 +49,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /
-              port: 8080
+              port: 80
             initialDelaySeconds: 5
             periodSeconds: 5
 
@@ -69,6 +68,6 @@ spec:
     app: frontend
   ports:
     - port: 80
-      targetPort: 8080
+      targetPort: 80
       protocol: TCP
       name: http
