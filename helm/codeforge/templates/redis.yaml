@@ -1,0 +1,92 @@
+# ─── Redis PersistentVolumeClaim ─────────────────────────────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+  
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/part-of:  {{ .Values.appname }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage }}
+  storageClassName: standard
+
+---
+# ─── Redis StatefulSet ────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/part-of:  {{ .Values.appname }}
+spec:
+  serviceName: redis-svc
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+        app.kubernetes.io/name: redis
+    spec:
+      securityContext:
+        fsGroup: 999
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          command:
+            - redis-server
+            - --save
+            - "60"
+            - "1"
+            - --loglevel
+            - warning
+          ports:
+            - containerPort: 6379
+              name: redis
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          livenessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 5
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-pvc
+
+---
+# ─── Redis Service (ClusterIP — internal only) ────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-svc
+  
+  labels:
+    app.kubernetes.io/name: redis
+    app.kubernetes.io/part-of:  {{ .Values.appname }}
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+  clusterIP: None

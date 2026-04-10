@@ -4,12 +4,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
-  namespace: codeforge
+  
   labels:
     app.kubernetes.io/name: frontend
-    app.kubernetes.io/part-of: codeforge
+    app.kubernetes.io/part-of: {{ .Values.appname }}
 spec:
-  replicas: 2
   selector:
     matchLabels:
       app: frontend
@@ -33,7 +32,7 @@ spec:
               app: frontend
       containers:
         - name: frontend
-          image: subratdevops/codeforge-frontend:v1.15
+          image: subratdevops/codeforge-frontend:{{ .Values.imageTag }}
           imagePullPolicy: Always
           ports:
             - containerPort: 80
@@ -59,10 +58,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: frontend
-  namespace: codeforge
+  
   labels:
     app.kubernetes.io/name: frontend
-    app.kubernetes.io/part-of: codeforge
+    app.kubernetes.io/part-of: {{ .Values.appname }}
 spec:
   selector:
     app: frontend
@@ -71,3 +70,34 @@ spec:
       targetPort: 80
       protocol: TCP
       name: http
+
+---
+# ─── Frontend HorizontalPodAutoscaler ─────────────────────────────────────────
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-hpa
+  
+  labels:
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/part-of: {{ .Values.appname }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend
+  minReplicas: {{ .Values.hpa.minReplicas }}
+  maxReplicas: {{ .Values.hpa.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.hpa.cpuUtilization }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.hpa.memoryUtilization }}

@@ -1,0 +1,9 @@
+replicaCount: 2
+appname: codeforge
+imageTag: v1
+storage: 2Gi
+hpa:
+  minReplicas: 2
+  maxReplicas: 8
+  cpuUtilization: 70
+  memoryUtilization: 80
