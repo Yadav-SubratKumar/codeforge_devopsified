@@ -8,12 +8,12 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ .Values.appname }}
     app.kubernetes.io/part-of: {{ .Values.appname }}
-    annotations:
+  annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
   rules:
-      http:
+    - http:
         paths:
           # API traffic → backend service
           - path: /api

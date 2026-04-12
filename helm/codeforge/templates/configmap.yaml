@@ -8,6 +8,5 @@ data:
   NODE_ENV: "production"
   PORT: "5000"
   LOG_LEVEL: "info"
-  DATABASE_URL: "postgresql://codeforge:$(POSTGRES_PASSWORD)@postgres-svc:5432/codeforge_db"
-  REDIS_URL: "redis://redis-svc:6379"
+  REDIS_URL: "redis://redis:6379"
   ALLOWED_ORIGINS: "http://localhost:3000"
