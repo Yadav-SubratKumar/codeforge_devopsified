@@ -124,7 +124,6 @@ spec:
       targetPort: 5432
       protocol: TCP
       name: postgres
-  clusterIP: None
 
 ---
 # ─── Init SQL ConfigMap ───────────────────────────────────────────────────────
@@ -181,7 +180,42 @@ data:
       test_results JSONB DEFAULT '[]',
       submitted_at TIMESTAMP DEFAULT NOW()
     );
-
+    -- Seed sample challenges
+    INSERT INTO challenges (title, slug, description, difficulty, category, points, template_code, test_cases, examples) VALUES
+    (
+      'Two Sum',
+      'two-sum',
+      'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.',
+      'easy',
+      'Arrays',
+      10,
+      'function twoSum(nums, target) {\n  // Your code here\n}',
+      '[{"input": "[2,7,11,15], 9", "expected": "[0,1]"}, {"input": "[3,2,4], 6", "expected": "[1,2]"}]',
+      '[{"input": "nums = [2,7,11,15], target = 9", "output": "[0,1]", "explanation": "nums[0] + nums[1] = 9"}]'
+    ),
+    (
+      'Reverse String',
+      'reverse-string',
+      'Write a function that reverses a string. The input string is given as an array of characters.',
+      'easy',
+      'Strings',
+      10,
+      'function reverseString(s) {\n  // Your code here\n}',
+      '[{"input": "[\"h\",\"e\",\"l\",\"l\",\"o\"]", "expected": "[\"o\",\"l\",\"l\",\"e\",\"h\"]"}]',
+      '[{"input": "s = [\"h\",\"e\",\"l\",\"l\",\"o\"]", "output": "[\"o\",\"l\",\"l\",\"e\",\"h\"]"}]'
+    ),
+    (
+      'Valid Parentheses',
+      'valid-parentheses',
+      'Given a string s containing just the characters (, ), {, }, [ and ], determine if the input string is valid.',
+      'medium',
+      'Stacks',
+      20,
+      'function isValid(s) {\n  // Your code here\n}',
+      '[{"input": "()", "expected": "true"}, {"input": "()[]{}", "expected": "true"}, {"input": "(]", "expected": "false"}]',
+      '[{"input": "s = \"()\"", "output": "true"}, {"input": "s = \"(]\"", "output": "false"}]'
+    )
+    ON CONFLICT (slug) DO NOTHING;
     CREATE INDEX IF NOT EXISTS idx_submissions_user ON submissions(user_id);
     CREATE INDEX IF NOT EXISTS idx_submissions_challenge ON submissions(challenge_id);
     CREATE INDEX IF NOT EXISTS idx_challenges_difficulty ON challenges(difficulty);

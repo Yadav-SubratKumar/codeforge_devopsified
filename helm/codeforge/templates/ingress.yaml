@@ -8,21 +8,12 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ .Values.appname }}
     app.kubernetes.io/part-of: {{ .Values.appname }}
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+
 spec:
   ingressClassName: nginx
   rules:
     - http:
         paths:
-          # API traffic → backend service
-          - path: /api
-            pathType: Prefix
-            backend:
-              service:
-                name: backend
-                port:
-                  number: 5000
           # All other traffic → frontend (SPA)
           - path: /
             pathType: Prefix

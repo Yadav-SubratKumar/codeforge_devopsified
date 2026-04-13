@@ -9,4 +9,4 @@ data:
   PORT: "5000"
   LOG_LEVEL: "info"
   REDIS_URL: "redis://redis:6379"
-  ALLOWED_ORIGINS: "http://localhost:3000"
+  ALLOWED_ORIGINS: "*"
