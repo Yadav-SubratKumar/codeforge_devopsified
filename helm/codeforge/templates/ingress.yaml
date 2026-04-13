@@ -14,7 +14,6 @@ spec:
   rules:
     - http:
         paths:
-          # All other traffic → frontend (SPA)
           - path: /
             pathType: Prefix
             backend:

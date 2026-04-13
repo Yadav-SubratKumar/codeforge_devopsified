@@ -47,7 +47,10 @@ spec:
                   name: codeforge-secrets
                   key: POSTGRES_PASSWORD
             - name: DATABASE_URL
-              value: "postgresql://codeforge:$(POSTGRES_PASSWORD)@postgres-svc:5432/codeforge_db"
+              valueFrom:
+                secretKeyRef:
+                  name: codeforge-secrets
+                  key: DATABASE_URL
 
           livenessProbe:
             exec:
