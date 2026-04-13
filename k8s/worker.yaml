@@ -33,7 +33,7 @@ spec:
 
       containers:
         - name: worker
-          image: subratdevops/codeforge-worker:v1.24
+          image: subratdevops/codeforge-worker:v1.25
           imagePullPolicy: Always
           env:
             - name: REDIS_URL
