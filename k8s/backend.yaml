@@ -32,7 +32,7 @@ spec:
               app: backend
       containers:
         - name: backend
-          image: subratdevops/codeforge-backend:v1.26
+          image: subratdevops/codeforge-backend:v1.27
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
