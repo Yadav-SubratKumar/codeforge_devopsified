@@ -302,8 +302,8 @@ jobs:
           sed -i "s|${DOCKERHUB_USERNAME}/codeforge-worker:.*|${DOCKERHUB_USERNAME}/codeforge-worker:${IMAGE_TAG}|g" k8s/worker.yaml
           sed -i "s|${DOCKERHUB_USERNAME}/codeforge-backend:.*|${DOCKERHUB_USERNAME}/codeforge-backend:${IMAGE_TAG}|g" k8s/backend.yaml
           sed -i "s|${DOCKERHUB_USERNAME}/codeforge-frontend:.*|${DOCKERHUB_USERNAME}/codeforge-frontend:${IMAGE_TAG}|g" k8s/frontend.yaml
-          sed -i -E "s|^\s*imageTag\s*:.*|imageTag: ${IMAGE_TAG}|g" helm/codeforge/values-dev.yaml
-          sed -i -E "s|^\s*imageTag\s*:.*|imageTag: ${IMAGE_TAG}|g" helm/codeforge/values-prod.yaml
+          sed -i "s|imageTag:.*|imageTag: ${IMAGE_TAG}|g" helm/codeforge/values-dev.yaml
+          sed -i "s|imageTag:.*|imageTag: ${IMAGE_TAG}|g" helm/codeforge/values-prod.yaml
 
       - name: Commit and push changes
         run: |
