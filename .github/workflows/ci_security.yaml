@@ -302,6 +302,11 @@ jobs:
           sed -i "s|${DOCKERHUB_USERNAME}/codeforge-worker:.*|${DOCKERHUB_USERNAME}/codeforge-worker:${IMAGE_TAG}|g" k8s/worker.yaml
           sed -i "s|${DOCKERHUB_USERNAME}/codeforge-backend:.*|${DOCKERHUB_USERNAME}/codeforge-backend:${IMAGE_TAG}|g" k8s/backend.yaml
           sed -i "s|${DOCKERHUB_USERNAME}/codeforge-frontend:.*|${DOCKERHUB_USERNAME}/codeforge-frontend:${IMAGE_TAG}|g" k8s/frontend.yaml
+          echo "=== File contents ==="
+          cat helm/codeforge/values-dev.yaml
+
+          echo "=== Hex dump of imageTag line ==="
+          grep "imageTag" helm/codeforge/values-dev.yaml | xxd
           sed -i "s|imageTag:.*|imageTag: ${IMAGE_TAG}|g" helm/codeforge/values-dev.yaml
           sed -i "s|imageTag:.*|imageTag: ${IMAGE_TAG}|g" helm/codeforge/values-prod.yaml
 
