@@ -5,7 +5,7 @@ on:
     branches: [main, develop]
     paths-ignore:
       - 'k8s/**'
-      - 'helm/**''
+      - 'helm/**'
 
   pull_request:
     branches: [main]
