@@ -1,0 +1,43 @@
+# ─── Ingress ──────────────────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: codeforge-monitoring-ingress
+  labels:
+    app.kubernetes.io/name: codeforge
+    app.kubernetes.io/part-of: codeforge
+
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /grafana
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus-grafana
+                port:
+                  number: 80
+          - path: /prom
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus-kube-prometheus-prometheus
+                port:
+                  number: 9090
+          - path: /alert
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus-kube-prometheus-alertmanager
+                port:
+                  number: 9093
+          - path: /argo
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 443
+          

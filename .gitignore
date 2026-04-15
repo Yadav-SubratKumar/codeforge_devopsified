@@ -3,6 +3,10 @@ node_modules/
 .pnp
 .pnp.js
 
+# ─── Terraform ─────────────────────────────────────────────────────────────
+terraform/.terraform*
+terraform/terraform*
+kubeconfig
 # ─── Environment & Secrets ────────────────────────────────────────────────────
 .env
 .env.local
