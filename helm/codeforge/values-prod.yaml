@@ -1,6 +1,6 @@
 replicaCount: 2
 appname: codeforge
-imageTag: v1.28
+imageTag: v1.29
 storage: 2Gi
 hpa:
   minReplicas: 2
