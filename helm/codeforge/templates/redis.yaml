@@ -13,7 +13,7 @@ spec:
   resources:
     requests:
       storage: {{ .Values.storage }}
-  storageClassName: standard
+  storageClassName: {{ .Values.storageClassName }}
 
 ---
 # ─── Redis StatefulSet ────────────────────────────────────────────────────────

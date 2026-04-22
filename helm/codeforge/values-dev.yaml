@@ -2,8 +2,9 @@ replicaCount: 1
 appname: codeforge
 imageTag: v1.29
 storage: 1Gi
+storageClassName: managed-csi
 hpa:
-  minReplicas: 2
-  maxReplicas: 8
+  minReplicas: 1
+  maxReplicas: 2
   cpuUtilization: 70
   memoryUtilization: 80

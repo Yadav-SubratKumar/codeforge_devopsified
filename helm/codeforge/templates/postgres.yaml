@@ -13,7 +13,7 @@ spec:
   resources:
     requests:
       storage: {{ .Values.storage }}
-  storageClassName: standard   # Change to your cluster's StorageClass (e.g. gp3, premium-rwo)
+  storageClassName: {{ .Values.storageClassName }}   # Change to your cluster's StorageClass (e.g. gp3, premium-rwo)
 
 ---
 # ─── PostgreSQL StatefulSet ───────────────────────────────────────────────────

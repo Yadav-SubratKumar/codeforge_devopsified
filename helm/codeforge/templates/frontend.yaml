@@ -35,12 +35,12 @@ spec:
           image: subratdevops/codeforge-frontend:{{ .Values.imageTag }}
           imagePullPolicy: Always
           ports:
-            - containerPort: 80
+            - containerPort: 8080
 
           livenessProbe:
             httpGet:
               path: /
-              port: 80
+              port: 8080
             initialDelaySeconds: 10
             periodSeconds: 15
             failureThreshold: 3
@@ -48,7 +48,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /
-              port: 80
+              port: 8080
             initialDelaySeconds: 5
             periodSeconds: 5
 
@@ -67,7 +67,7 @@ spec:
     app: frontend
   ports:
     - port: 80
-      targetPort: 80
+      targetPort: 8080
       protocol: TCP
       name: http
 
