@@ -33,7 +33,7 @@ spec:
               app: frontend
       containers:
         - name: frontend
-          image: subratdevops/codeforge-frontend:v1.29
+          image: subratdevops/codeforge-frontend:v1.30
           imagePullPolicy: Always
           ports:
             - containerPort: 80
