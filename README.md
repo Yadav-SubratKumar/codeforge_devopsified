@@ -3,7 +3,7 @@
 A production-ready, 4-tier coding platform built with React, Node.js/Express, PostgreSQL, and Redis — designed as a DevSecOps project foundation.
 ---
 ## 📁 Diagram
-![Alt Text](d.png)   
+![Alt Text](diagram.png)   
 ---
 
 ## 🏗️ Architecture Overview
