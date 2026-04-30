@@ -10,3 +10,5 @@ data:
   LOG_LEVEL: "info"
   REDIS_URL: "redis://redis:6379"
   ALLOWED_ORIGINS: "*"
+  DATABASE_URL: "postgresql://codeforge:CHANGE_ME_STRONG_PASSWORD@postgres:5432/codeforge_db"
+
