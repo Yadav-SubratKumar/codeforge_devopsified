@@ -10,10 +10,7 @@ FROM gcr.io/distroless/nodejs22-debian13
 
 WORKDIR /app
 
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/server.js ./
-
+COPY --from=builder /app ./
 ENV NODE_ENV=production
 
 EXPOSE 5000

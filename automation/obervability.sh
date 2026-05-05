@@ -12,7 +12,7 @@ kubectl create namespace monitoring
 
 helm upgrade --install argocd argo/argo-cd --namespace argocd
 helm upgrade --install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring
-helm upgrade ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx -f values.yaml
+helm upgrade ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace -f values.yaml
 
 
 kubectl patch svc prometheus-kube-prometheus-prometheus -n monitoring -p '{"spec": {"type": "NodePort"}}'
