@@ -1,0 +1,22 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: grafana-route
+  namespace: monitoring
+spec:
+  parentRefs:
+    - name: shared-gateway
+      namespace: nginx-gateway
+
+  hostnames:
+    - "grafana.20.119.121.168.nip.io"
+
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+
+      backendRefs:
+        - name: prometheus-grafana
+          port: 80 
