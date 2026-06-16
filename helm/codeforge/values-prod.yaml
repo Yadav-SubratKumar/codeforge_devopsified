@@ -1,6 +1,6 @@
 replicaCount: 2
 appname: codeforge
-imageTag: v1.35
+imageTag: v1.36
 storage: 2Gi
 storageClassName: managed-csi
 hpa:
