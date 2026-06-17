@@ -1,5 +1,5 @@
 const express = require("express");
-const { v4: uuidv4 } = require("uuid");
+const { randomUUID } = require("crypto"); // Node.js built-in — no uuid package needed
 const { pool } = require("../config/db");
 const { getRedis } = require("../config/redis");
 const { authenticate } = require("../middleware/auth");
@@ -32,7 +32,7 @@ router.post("/", authenticate, submitLimiter, async (req, res) => {
   const challenge = await pool.query("SELECT id FROM challenges WHERE id = $1 AND is_active = true", [challenge_id]);
   if (!challenge.rows[0]) return res.status(404).json({ error: "Challenge not found" });
 
-  const submissionId = uuidv4();
+  const submissionId = randomUUID();
   await pool.query(
     "INSERT INTO submissions (id, user_id, challenge_id, language, code, status) VALUES ($1, $2, $3, $4, $5, 'pending')",
     [submissionId, req.user.id, challenge_id, language, code]

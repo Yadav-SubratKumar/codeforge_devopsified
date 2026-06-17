@@ -1,7 +1,32 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Editor from "@monaco-editor/react";
+import Editor, { loader } from "@monaco-editor/react";
 import api from "../api";
+
+// ─── Use locally bundled Monaco instead of CDN ────────────────────────────────
+// Without this, @monaco-editor/react fetches Monaco from jsdelivr CDN at runtime,
+// which is blocked by the nginx Content-Security-Policy (connect-src 'self').
+// Pointing the loader at the npm-installed monaco-editor package fixes the
+// infinite spinner on the editor page.
+import * as monaco from "monaco-editor";
+import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
+import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
+import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
+import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
+
+self.MonacoEnvironment = {
+  getWorker(_, label) {
+    if (label === "json") return new jsonWorker();
+    if (label === "css" || label === "scss" || label === "less") return new cssWorker();
+    if (label === "html" || label === "handlebars" || label === "razor") return new htmlWorker();
+    if (label === "typescript" || label === "javascript") return new tsWorker();
+    return new editorWorker();
+  },
+};
+
+loader.config({ monaco });
+// ─────────────────────────────────────────────────────────────────────────────
 
 const LANGUAGES = ["javascript", "python", "java", "cpp", "go"];
 

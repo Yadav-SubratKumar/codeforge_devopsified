@@ -12,6 +12,7 @@ RUN npm run build
 FROM cgr.dev/chainguard/nginx:latest
 
 COPY --from=builder /app/build /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Replace the main config file instead of placing it in conf.d
+COPY nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 8080

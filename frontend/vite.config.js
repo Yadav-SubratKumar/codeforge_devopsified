@@ -27,7 +27,17 @@ export default defineConfig({
     },
   },
 
-  
+  // Monaco editor web workers must be bundled as separate chunks so the browser
+  // can load them via blob: URLs (allowed by nginx's worker-src blob: CSP rule).
+  worker: {
+    format: "es",
+  },
+
+  optimizeDeps: {
+    // Pre-bundle monaco-editor so Vite doesn't try to scan thousands of files at dev startup
+    include: ["monaco-editor/esm/vs/editor/editor.worker"],
+  },
+
   test: {
     globals: true,
     environment: "jsdom",
@@ -44,9 +54,19 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ["react", "react-dom", "react-router-dom"],
-          monaco: ["@monaco-editor/react"],
+        manualChunks(id) {
+          // Bundle React dependencies into a 'vendor' chunk
+          if (
+            id.includes("node_modules/react/") ||
+            id.includes("node_modules/react-dom/") ||
+            id.includes("node_modules/react-router-dom/")
+          ) {
+            return "vendor";
+          }
+          // Bundle Monaco Editor into its own chunk
+          if (id.includes("node_modules/monaco-editor/")) {
+            return "monaco-editor";
+          }
         },
       },
     },

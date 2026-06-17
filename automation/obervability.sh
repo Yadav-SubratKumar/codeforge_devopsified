@@ -10,8 +10,10 @@ helm install ngf oci://ghcr.io/nginx/charts/nginx-gateway-fabric --create-namesp
 
 helm upgrade --install argocd argo/argo-cd --namespace argocd --create-namespace
 helm upgrade --install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
-# helm upgrade ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace -f values.yaml # only for observabitlity 
 
+# only for observabitlity 
+# helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+# helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace -f values.yaml 
 
 kubectl patch svc prometheus-kube-prometheus-prometheus -n monitoring -p '{"spec": {"type": "NodePort"}}'
 kubectl patch svc prometheus-grafana -n monitoring -p '{"spec": {"type": "NodePort"}}'
