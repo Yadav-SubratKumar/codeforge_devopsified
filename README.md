@@ -47,8 +47,7 @@ The project is designed as a **DevSecOps reference implementation**, demonstrati
 │   TIER 1     │    TIER 2     │   TIER 3     │      TIER 4        │
 │  Frontend    │  Backend API  │  PostgreSQL  │      Redis         │
 │  React +     │  Node.js +    │  Database    │  Cache + Job Queue │
-│  Monaco +    │  Express      │              │                    │
-│  Nginx       │               │              │                    │
+│  Nginx       │  Express      │              │                    │
 ├──────────────┴───────────────┴──────────────┴────────────────────┤
 │                       Code Execution Worker                      │
 │                                                                  │

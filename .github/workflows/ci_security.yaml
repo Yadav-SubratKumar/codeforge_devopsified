@@ -2,7 +2,7 @@ name: Security Scans
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
     paths-ignore:
       - 'k8s/**'
       - 'helm/**'
@@ -19,7 +19,6 @@ on:
 
 
 jobs:
-  # ─── Secret Detection ──────────────────────────────────────────
   gitleaks:
     name: Secret Detection (GitLeaks)
     runs-on: ubuntu-latest
@@ -27,7 +26,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0    # full history so GitLeaks scans all commits
+          fetch-depth: 0 
 
       - name: Run GitLeaks
         uses: gitleaks/gitleaks-action@v2
@@ -87,7 +86,6 @@ jobs:
           JWT_SECRET: test_secret_key
         run: npm test
 
-#  ─── Frontend ───────────────────────────────────────────────────
   frontend-test:
     name: Frontend Tests & Build
     runs-on: ubuntu-latest
@@ -122,7 +120,6 @@ jobs:
           path: frontend/build/
           retention-days: 7
 
-  # ─── Dependency Audit ───────────────────────────────────────────
   dependency-audit:
     name: Dependency Audit
     runs-on: ubuntu-latest
@@ -148,7 +145,6 @@ jobs:
         working-directory: worker
         run: npm audit --audit-level=high
 
-  # ─── SAST — Semgrep ─────────────────────────────────────────────
   semgrep:
     name: SAST (Semgrep)
     runs-on: ubuntu-latest
@@ -180,7 +176,6 @@ jobs:
           name: semgrep-report
           path: semgrep-report.json
 
-  # ─── Container Scanning — Trivy ─────────────────────────────────
   trivy:
     name: Container Scan (Trivy)
     runs-on: ubuntu-latest
